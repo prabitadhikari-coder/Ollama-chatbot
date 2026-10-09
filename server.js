@@ -5,7 +5,7 @@ const path = require("path");
 const app = express();
 const PORT = 3000;
 
-const OLLAMA_URL = "http://localhost:11434";
+const OLLAMA_URL = " 192.168.10.78:11434"; // Replace with your Ollama server URL
 const CHAT_MODEL = "nemotron-mini:latest";
 const READING_MODEL = "nemotron-3-nano:4b";
 
