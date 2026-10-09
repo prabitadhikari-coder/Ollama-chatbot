@@ -1,16 +1,27 @@
 {
   "name": "ollama-chatbot",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Secure AI Web Application with Floating Chatbot & FastAPI Gateway",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "start:gateway": "python -m uvicorn gateway.main:app --host 0.0.0.0 --port 8000",
+    "dev:server": "node server.js",
+    "build:frontend": "npm --prefix frontend run build",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "test": "node tests/api.test.js",
+    "test:gateway": "node tests/gateway.test.js",
+    "test:all": "node tests/api.test.js && node tests/gateway.test.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "express": "^5.2.1"
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.6",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.1"
   }
 }
