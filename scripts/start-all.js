@@ -119,8 +119,23 @@ async function main() {
     }
   });
 
+  // Start Communication Bridge Server on port 9000
+  console.log('[4/5] Starting Communication Bridge on http://localhost:9000...');
+  const bridgeProc = spawn('node', ['scripts/bridge.js'], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    shell: true,
+  });
+  processes.push(bridgeProc);
+
+  bridgeProc.stdout.on('data', (d) => {
+    const line = d.toString().trim();
+    if (line && line.includes('Active')) {
+      console.log('  [Bridge] ✓ Communication Bridge ready on port 9000');
+    }
+  });
+
   // Start ngrok tunnel on port 8000
-  console.log('[4/4] Starting ngrok tunnel forwarding to port 8000...');
+  console.log('[5/5] Starting ngrok tunnel forwarding to port 8000...');
   const ngrokProc = spawn('ngrok', ['http', '8000'], {
     stdio: 'ignore',
     shell: true,
@@ -146,11 +161,13 @@ async function main() {
     console.log(`2. If the status says 'Offline', click on the status badge in the header`);
     console.log(`3. Paste your ngrok URL above and click 'Save & Test'`);
     console.log(`\nLocal endpoints:`);
-    console.log(`• Node.js Backend:    http://localhost:3000`);
-    console.log(`• FastAPI Gateway:    http://localhost:8000`);
-    console.log(`• FastAPI Docs:       http://localhost:8000/docs`);
-    console.log(`• Security Telemetry: http://localhost:8000/security/stats`);
-    console.log(`• ngrok Web Console:  http://127.0.0.1:4040`);
+    console.log(`• Node.js Backend:       http://localhost:3000`);
+    console.log(`• FastAPI Gateway:       http://localhost:8000`);
+    console.log(`• Communication Bridge:  http://localhost:9000`);
+    console.log(`• Overlay Test Demo:     http://localhost:8000/overlay-test.html`);
+    console.log(`• Universal Embed Demo:  http://localhost:8000/embed-demo.html`);
+    console.log(`• FastAPI Swagger Docs:  http://localhost:8000/docs`);
+    console.log(`• ngrok Web Console:     http://127.0.0.1:4040`);
   } else {
     console.log(`⚠ ngrok tunnel started, but URL could not be auto-detected yet.`);
     console.log(`  Visit http://127.0.0.1:4040 in your browser to inspect your active ngrok URL.`);
