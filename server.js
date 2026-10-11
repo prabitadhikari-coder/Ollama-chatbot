@@ -41,8 +41,10 @@ const rawAllowedOrigins = (process.env.ALLOWED_ORIGINS || "")
 const defaultAllowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
+  "http://localhost:8000",
   "http://127.0.0.1:3000",
   "http://127.0.0.1:5173",
+  "http://127.0.0.1:8000",
   "https://steadfast-luminance-praying.ngrok-free.dev"
 ];
 
@@ -55,6 +57,8 @@ function isOriginAllowed(origin) {
 
   try {
     const url = new URL(origin);
+    // Allow any localhost / loopback port (3000, 5173, 8000, etc.)
+    if (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1") return true;
     // Automatically allow any Cloudflare Pages domain (*.pages.dev)
     if (url.hostname.endsWith(".pages.dev")) return true;
     // Allow ngrok tunnels

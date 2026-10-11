@@ -1,10 +1,11 @@
 import time
-import httpx
+from pathlib import Path
 from typing import List, Literal, Optional
 from contextlib import asynccontextmanager
+import httpx
 from fastapi import FastAPI, Request, Response, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, FileResponse
 from pydantic import BaseModel, Field, field_validator
 
 from .config import settings
@@ -69,11 +70,11 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Gateway-Protection"] = "FastAPI-DefenseShield-v1"
     return response
 
-# CORS Middleware with regex support for Cloudflare Pages and ngrok
+# CORS Middleware with regex support for Cloudflare Pages, ngrok, and any localhost port
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
-    allow_origin_regex=r"^https://([a-zA-Z0-9-]+\.)*(pages\.dev|ngrok-free\.dev|ngrok\.app)$|^http://(localhost|127\.0\.0\.1):(3000|5173)$",
+    allow_origin_regex=r"^https://([a-zA-Z0-9-]+\.)*(pages\.dev|ngrok-free\.dev|ngrok\.app)$|^http://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
@@ -216,11 +217,43 @@ async def secure_chat(payload: ChatRequestModel, request: Request):
             content={"error": f"Failed to communicate with upstream server: {str(e)}"}
         )
 
+DIST_DIRS = [
+    Path(__file__).resolve().parent.parent / "dist",
+    Path(__file__).resolve().parent.parent / "frontend" / "dist",
+]
+
+def find_static_file(subpath: str) -> Optional[Path]:
+    rel = subpath.lstrip("/")
+    if not rel:
+        rel = "index.html"
+    for d in DIST_DIRS:
+        f = d / rel
+        if f.is_file():
+            return f
+    # SPA fallback: if not an asset with file extension, serve index.html
+    if "." not in rel.split("/")[-1]:
+        for d in DIST_DIRS:
+            idx = d / "index.html"
+            if idx.is_file():
+                return idx
+    return None
+
 @app.get("/{full_path:path}")
 async def proxy_all_other_routes(full_path: str, request: Request):
     """
-    Proxies static assets or other routes back to Node.js backend.
+    Serves static frontend assets directly from dist if present,
+    or transparently proxies other routes back to Node.js backend.
     """
+    # 1. Check if the static asset or SPA HTML exists locally in dist
+    static_file = find_static_file(full_path)
+    if static_file:
+        return FileResponse(static_file)
+
+    # 2. If it is a missing code asset (.js, .css, .svg, .map), return 404 instead of falling through
+    if full_path and "." in full_path.split("/")[-1]:
+        return Response(content=b"Asset not found", status_code=404, media_type="text/plain")
+
+    # 3. Otherwise proxy dynamically to Node.js
     if not http_client:
         raise HTTPException(status_code=503, detail="Gateway client uninitialized")
     
