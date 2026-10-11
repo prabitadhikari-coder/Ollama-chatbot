@@ -70,15 +70,24 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Gateway-Protection"] = "FastAPI-DefenseShield-v1"
     return response
 
-# CORS Middleware with regex support for Cloudflare Pages/Workers, ngrok, and any localhost port
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.allowed_origins,
-    allow_origin_regex=r"^https://([a-zA-Z0-9-]+\.)*(pages\.dev|workers\.dev|ngrok-free\.dev|ngrok\.app)$|^http://(localhost|127\.0\.0\.1)(:\d+)?$",
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["*"],
-)
+# CORS Middleware: supports wildcard '*' (for embedding on any website) or domain-filtered regex
+if "*" in settings.allowed_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.allowed_origins,
+        allow_origin_regex=r"^https://([a-zA-Z0-9-]+\.)*(pages\.dev|workers\.dev|ngrok-free\.dev|ngrok\.app)$|^http://(localhost|127\.0\.0\.1)(:\d+)?$",
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["*"],
+    )
 
 def get_client_ip(request: Request) -> str:
     # Check X-Forwarded-For from ngrok/proxies

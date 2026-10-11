@@ -55,6 +55,7 @@ const allAllowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...rawAl
 function isOriginAllowed(origin) {
   // Allow curl, mobile apps, or same-origin requests where origin header is undefined
   if (!origin) return true;
+  if (allAllowedOrigins.includes("*") || process.env.ALLOWED_ORIGINS === "*") return true;
   if (allAllowedOrigins.includes(origin)) return true;
 
   try {

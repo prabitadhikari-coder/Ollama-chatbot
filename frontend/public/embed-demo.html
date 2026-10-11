@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Website - NexusAI Widget Embed Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 20px;
+      color: #0f172a;
+    }
+    main {
+      max-width: 900px;
+      margin: 48px auto;
+      padding: 0 24px;
+    }
+    h1 {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    p {
+      color: #475569;
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      margin-bottom: 32px;
+    }
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 16px 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">ACME Enterprises &bull; Sample External Website</div>
+    <div style="font-size: 14px; color: #64748b;">Notice the AI Assistant in bottom-right corner ↘</div>
+  </header>
+
+  <main>
+    <div class="badge">Universal Embeddable AI Assistant</div>
+    <h1>Embed Your AI Assistant Anywhere</h1>
+    <p>
+      This simulates an external customer website (e.g. your WordPress site, Shopify store, portfolio, or SaaS app).
+      The AI assistant button floating in the bottom-right corner was embedded with just <strong>one single script tag</strong>!
+    </p>
+
+    <div class="card">
+      <h3>The 1-Line Embed Code</h3>
+      <p>Simply paste this snippet before <code>&lt;/body&gt;</code> on any webpage:</p>
+      <pre><code>&lt;!-- NexusAI Drop-in Widget --&gt;
+&lt;script 
+  src="http://localhost:8000/widget.js" 
+  data-api-url="http://localhost:8000"
+  data-title="NexusAI Assistant"
+  data-color="#2563eb"
+  defer&gt;
+&lt;/script&gt;</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Key Advantages</h3>
+      <ul>
+        <li><strong>Shadow DOM Isolation:</strong> Host website CSS will never mess up your chat styles.</li>
+        <li><strong>Direct Local / ngrok Inference:</strong> Communicates via streaming SSE directly with your local Ollama models.</li>
+        <li><strong>No Cloudflare Dependency:</strong> Host it on your own server, VPS, or tunnel.</li>
+      </ul>
+    </div>
+  </main>
+
+  <!-- Embed NexusAI Chatbot Widget on this page -->
+  <script 
+    src="/widget.js" 
+    data-api-url="http://localhost:8000"
+    data-title="NexusAI Assistant"
+    data-color="#2563eb"
+    defer>
+  </script>
+</body>
+</html>
