@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { Send, Square, Sparkles } from 'lucide-react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { Send, Square, Mic, MicOff, Database } from 'lucide-react';
 
 interface ChatInputProps {
   input: string;
@@ -19,6 +19,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   disabled,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isListening, setIsListening] = useState<boolean>(false);
+  const recognitionRef = useRef<any>(null);
 
   // Auto-resize textarea to fit content
   useEffect(() => {
@@ -29,10 +31,68 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, [input]);
 
+  // Speech Recognition setup
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event: any) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setInput(input ? `${input.trim()} ${transcript}` : transcript);
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {}
+      }
+    };
+  }, [input, setInput]);
+
+  const toggleListening = useCallback(() => {
+    if (!recognitionRef.current) return;
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch {
+        setIsListening(false);
+      }
+    }
+  }, [isListening]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (!isGenerating && !disabled && input.trim()) {
+        if (isListening && recognitionRef.current) {
+          recognitionRef.current.stop();
+          setIsListening(false);
+        }
         onSend();
       }
     }
@@ -46,20 +106,26 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         if (isGenerating) {
           onStop();
         } else if (!disabled && input.trim()) {
+          if (isListening && recognitionRef.current) {
+            recognitionRef.current.stop();
+            setIsListening(false);
+          }
           onSend();
         }
       }}
     >
-      <div className="input-field-wrapper">
+      <div className={`input-field-wrapper ${isListening ? 'listening-active' : ''}`}>
         <textarea
           ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={
-            disabled
+            isListening
+              ? 'Listening to your voice... Speak now.'
+              : disabled
               ? 'Backend offline. Check Ollama and ngrok tunnel...'
-              : 'Ask a question or enter a command... (Enter to send, Shift+Enter for newline)'
+              : 'Ask questions, query database records, or request summaries...'
           }
           disabled={disabled && !isGenerating}
           rows={1}
@@ -68,6 +134,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         />
 
         <div className="input-action-buttons">
+          {/* Voice dictation button */}
+          {typeof window !== 'undefined' &&
+            ((window as any).SpeechRecognition ||
+              (window as any).webkitSpeechRecognition) && (
+              <button
+                type="button"
+                onClick={toggleListening}
+                className={`voice-mic-btn ${isListening ? 'active-recording' : ''}`}
+                title={isListening ? 'Stop listening' : 'Dictate prompt with microphone'}
+                aria-label={isListening ? 'Stop voice recording' : 'Start voice recording'}
+              >
+                {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+              </button>
+            )}
+
           {isGenerating ? (
             <button
               type="button"
@@ -95,8 +176,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
       <div className="input-subtext">
         <div className="subtext-left">
-          <Sparkles size={11} />
-          <span>Local Ollama Neural Core</span>
+          <Database size={11} className="text-emerald" />
+          <span>Knowledge &amp; SQL Engine Ready</span>
         </div>
         <div className="subtext-right">
           <span>Shift + Enter for new line</span>

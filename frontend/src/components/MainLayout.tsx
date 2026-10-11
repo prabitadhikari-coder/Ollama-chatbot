@@ -13,6 +13,10 @@ import {
   Terminal,
   Lock,
   MessageSquare,
+  Database,
+  Table,
+  Search,
+  Sparkles,
 } from 'lucide-react';
 import type { ServerStatus, ModelRole } from '../services/api';
 import { API_BASE_URL } from '../services/api';
@@ -46,6 +50,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const handleRunDocAnalysis = () => {
     const combinedMessage = `Document:\n"""\n${docText.trim()}\n"""\n\nInstruction: ${docPrompt.trim()}`;
     onOpenChatWithPrompt(combinedMessage, 'reading');
+  };
+
+  const [nlQuery, setNlQuery] = useState(
+    'Find our top 5 revenue-generating customer tiers and show their average lifetime value with a SQL breakdown.'
+  );
+
+  const handleRunNlQuery = (queryText?: string) => {
+    const q = (queryText || nlQuery).trim();
+    if (!q) return;
+    const prompt = `Database Query Directive:\n"""\n${q}\n"""\n\nPlease formulate the SQL query against our connected schema, extract the insights, and format the findings in a clean table with key business takeaways.`;
+    onOpenChatWithPrompt(prompt, 'reading');
   };
 
   return (
@@ -325,6 +340,221 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                     </span>
                   </li>
                 </ul>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* Tab: Database & Knowledge Hub */}
+      {activeTab === 'db-hub' && (
+        <div className="tab-pane-fade">
+          <section className="db-hub-workspace">
+            <div className="section-title-row">
+              <h2>Database Knowledge Hub &amp; SQL Copilot</h2>
+              <p>
+                Natural language query interface connected to your enterprise database schemas and tables
+              </p>
+            </div>
+
+            {/* Top Database Telemetry Banner */}
+            <div className="db-status-banner">
+              <div className="db-status-left">
+                <div className="db-icon-badge">
+                  <Database size={22} className="text-emerald" />
+                </div>
+                <div>
+                  <div className="db-status-title">
+                    <span>Connected Database: PostgreSQL / Enterprise Analytics</span>
+                    <span className="live-pulse-badge">Live Synced</span>
+                  </div>
+                  <div className="db-status-sub">
+                    Host: <code>127.0.0.1:5432</code> &bull; Connection Pool: 8 active &bull; Total Indexed Rows: 113,620
+                  </div>
+                </div>
+              </div>
+              <div className="db-status-right">
+                <span className="db-metric-chip">Latency: 12ms</span>
+                <span className="db-metric-chip">ChromaDB Vectors: 42.8k</span>
+              </div>
+            </div>
+
+            {/* Natural Language to SQL Query Box */}
+            <div className="nl-query-card">
+              <div className="nl-query-header">
+                <Search size={16} className="text-indigo-500" />
+                <label htmlFor="nl-query-input">Ask a Data Question in Plain English</label>
+              </div>
+              <div className="nl-query-input-row">
+                <input
+                  id="nl-query-input"
+                  type="text"
+                  value={nlQuery}
+                  onChange={(e) => setNlQuery(e.target.value)}
+                  placeholder="e.g., Which product category had the highest return rate in Q3?"
+                  className="nl-input"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRunNlQuery()}
+                  className="nl-submit-btn"
+                >
+                  <Sparkles size={15} />
+                  <span>Query Database</span>
+                </button>
+              </div>
+
+              {/* Sample Quick Query Suggestions */}
+              <div className="nl-samples-row">
+                <span className="samples-label">Quick Queries:</span>
+                <button
+                  className="sample-query-pill"
+                  onClick={() =>
+                    handleRunNlQuery(
+                      'Show top 5 customers by lifetime value and group them by country.'
+                    )
+                  }
+                >
+                  Top 5 Customers by Value
+                </button>
+                <button
+                  className="sample-query-pill"
+                  onClick={() =>
+                    handleRunNlQuery(
+                      'Which products currently have stock below their reorder threshold?'
+                    )
+                  }
+                >
+                  Low Stock Alert
+                </button>
+                <button
+                  className="sample-query-pill"
+                  onClick={() =>
+                    handleRunNlQuery(
+                      'Calculate average order value by payment status for the past 30 days.'
+                    )
+                  }
+                >
+                  Monthly Revenue by Status
+                </button>
+              </div>
+            </div>
+
+            {/* Schema & Table Explorer Grid */}
+            <div className="table-explorer-section">
+              <div className="explorer-title-row">
+                <Table size={16} className="text-secondary" />
+                <h3>Connected Schema Explorer (Click any query to run in AI assistant)</h3>
+              </div>
+
+              <div className="schema-cards-grid">
+                {/* Table 1: Customers */}
+                <div className="schema-table-card">
+                  <div className="table-card-header">
+                    <div className="table-name-group">
+                      <Table size={15} className="text-blue-500" />
+                      <h4>customers</h4>
+                    </div>
+                    <span className="row-count-badge">14,250 rows</span>
+                  </div>
+                  <div className="table-columns-list">
+                    <code>id (PK)</code>, <code>name</code>, <code>email</code>, <code>tier</code>, <code>country</code>, <code>lifetime_value</code>
+                  </div>
+                  <div className="table-actions">
+                    <button
+                      className="run-table-query-btn"
+                      onClick={() =>
+                        handleRunNlQuery(
+                          'Analyze customer tiers in the customers table: show total count and average lifetime value per tier as a markdown table.'
+                        )
+                      }
+                    >
+                      <Sparkles size={12} />
+                      <span>Analyze Customer Tiers</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table 2: Orders */}
+                <div className="schema-table-card">
+                  <div className="table-card-header">
+                    <div className="table-name-group">
+                      <Table size={15} className="text-emerald" />
+                      <h4>orders</h4>
+                    </div>
+                    <span className="row-count-badge">89,400 rows</span>
+                  </div>
+                  <div className="table-columns-list">
+                    <code>id (PK)</code>, <code>customer_id (FK)</code>, <code>amount</code>, <code>status</code>, <code>order_date</code>
+                  </div>
+                  <div className="table-actions">
+                    <button
+                      className="run-table-query-btn"
+                      onClick={() =>
+                        handleRunNlQuery(
+                          'From the orders table, calculate total sales volume grouped by status (completed, pending, refunded) with percentages.'
+                        )
+                      }
+                    >
+                      <Sparkles size={12} />
+                      <span>Break Down Order Status</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table 3: Inventory */}
+                <div className="schema-table-card">
+                  <div className="table-card-header">
+                    <div className="table-name-group">
+                      <Table size={15} className="text-amber" />
+                      <h4>inventory</h4>
+                    </div>
+                    <span className="row-count-badge">3,120 rows</span>
+                  </div>
+                  <div className="table-columns-list">
+                    <code>sku (PK)</code>, <code>product_name</code>, <code>category</code>, <code>stock_level</code>, <code>reorder_threshold</code>
+                  </div>
+                  <div className="table-actions">
+                    <button
+                      className="run-table-query-btn"
+                      onClick={() =>
+                        handleRunNlQuery(
+                          'Query the inventory table to list all items where stock_level < reorder_threshold, sorted by lowest stock first.'
+                        )
+                      }
+                    >
+                      <Sparkles size={12} />
+                      <span>Audit Low Stock</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table 4: Support Tickets */}
+                <div className="schema-table-card">
+                  <div className="table-card-header">
+                    <div className="table-name-group">
+                      <Table size={15} className="text-indigo-500" />
+                      <h4>support_tickets</h4>
+                    </div>
+                    <span className="row-count-badge">6,850 rows</span>
+                  </div>
+                  <div className="table-columns-list">
+                    <code>id (PK)</code>, <code>customer_id</code>, <code>priority</code>, <code>issue_type</code>, <code>resolution_hours</code>
+                  </div>
+                  <div className="table-actions">
+                    <button
+                      className="run-table-query-btn"
+                      onClick={() =>
+                        handleRunNlQuery(
+                          'From support_tickets, calculate average resolution_hours grouped by priority and summarize the most frequent issue_types.'
+                        )
+                      }
+                    >
+                      <Sparkles size={12} />
+                      <span>Analyze Resolution Times</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </section>

@@ -133,7 +133,11 @@ export const MessageList: React.FC<MessageListProps> = ({
       ) : (
         <div className="messages-flow">
           {messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} />
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              onSelectFollowUp={(p) => onSelectPrompt(p)}
+            />
           ))}
 
           {/* Typing Indicator */}

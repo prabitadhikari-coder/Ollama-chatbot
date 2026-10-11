@@ -8,6 +8,7 @@ import {
   Sparkles,
   BookOpen,
   MessageSquare,
+  Download,
 } from 'lucide-react';
 import type { ModelRole, ServerStatus } from '../services/api';
 import { ConnectionStatus } from './ConnectionStatus';
@@ -19,6 +20,7 @@ interface ChatHeaderProps {
   role: ModelRole;
   onRoleChange: (role: ModelRole) => void;
   onNewChat: () => void;
+  onExportChat?: () => void;
   isMinimized: boolean;
   onToggleMinimize: () => void;
   isMaximized: boolean;
@@ -34,6 +36,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   role,
   onRoleChange,
   onNewChat,
+  onExportChat,
   isMinimized,
   onToggleMinimize,
   isMaximized,
@@ -63,6 +66,18 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 
         {/* Action Window Buttons */}
         <div className="chat-header-controls">
+          {/* Export Chat Button */}
+          {onExportChat && (
+            <button
+              onClick={onExportChat}
+              className="header-action-btn"
+              title="Export Conversation (Markdown)"
+              aria-label="Export conversation"
+            >
+              <Download size={15} />
+            </button>
+          )}
+
           <button
             onClick={onNewChat}
             disabled={isGenerating}
@@ -124,7 +139,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
             type="button"
             className={`model-chip ${role === 'reading' ? 'active' : ''}`}
             onClick={() => onRoleChange('reading')}
-            title="Document Analysis & Extraction (nemotron-3-nano:4b)"
+            title="Document Analysis & Database Extraction (nemotron-3-nano:4b)"
           >
             <BookOpen size={13} />
             <span>Reading: Nemotron Nano</span>

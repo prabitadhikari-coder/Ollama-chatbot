@@ -237,6 +237,26 @@ export const App: React.FC = () => {
     handleSendMessage(prompt, role);
   };
 
+  // Export conversation as Markdown
+  const handleExportChat = useCallback(() => {
+    if (messages.length === 0) return;
+    const dateStr = new Date().toISOString().split('T')[0];
+    let mdContent = `# NexusAI Conversation Export (${dateStr})\n\n`;
+    for (const msg of messages) {
+      const author = msg.role === 'user' ? 'User' : `Assistant (${msg.model || 'AI'})`;
+      mdContent += `### ${author} [${msg.timestamp}]\n\n${msg.content}\n\n---\n\n`;
+    }
+    const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `nexus-chat-${dateStr}.md`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [messages]);
+
   return (
     <div className="app-root">
       {/* Top Application Navigation & Header */}
@@ -296,6 +316,7 @@ export const App: React.FC = () => {
         onSend={() => handleSendMessage()}
         onStop={handleStop}
         onNewChat={handleNewChat}
+        onExportChat={messages.length > 0 ? handleExportChat : undefined}
         status={serverStatus}
         checkingStatus={checkingStatus}
         onRefreshStatus={fetchStatus}

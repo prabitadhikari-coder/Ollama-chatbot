@@ -55,6 +55,12 @@ export const Header: React.FC<HeaderProps> = ({
             Doc Intelligence
           </button>
           <button
+            className={`nav-tab ${activeTab === 'db-hub' ? 'active' : ''}`}
+            onClick={() => setActiveTab('db-hub')}
+          >
+            Database Hub
+          </button>
+          <button
             className={`nav-tab ${activeTab === 'architecture' ? 'active' : ''}`}
             onClick={() => setActiveTab('architecture')}
           >

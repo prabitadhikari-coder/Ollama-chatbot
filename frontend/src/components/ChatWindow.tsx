@@ -16,6 +16,7 @@ interface ChatWindowProps {
   onSend: () => void;
   onStop: () => void;
   onNewChat: () => void;
+  onExportChat?: () => void;
   status: ServerStatus | null;
   checkingStatus: boolean;
   onRefreshStatus: () => void;
@@ -40,6 +41,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onSend,
   onStop,
   onNewChat,
+  onExportChat,
   status,
   checkingStatus,
   onRefreshStatus,
@@ -85,6 +87,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         role={role}
         onRoleChange={onRoleChange}
         onNewChat={onNewChat}
+        onExportChat={onExportChat}
         isMinimized={isMinimized}
         onToggleMinimize={onToggleMinimize}
         isMaximized={isMaximized}
