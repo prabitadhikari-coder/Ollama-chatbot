@@ -8,6 +8,7 @@ interface HeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onOpenChat: () => void;
+  onOpenTunnelSettings: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -16,6 +17,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
   onOpenChat,
+  onOpenTunnelSettings,
 }) => {
   const isOnline = status?.connected && status?.chatModelAvailable;
 
@@ -68,24 +70,21 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right controls */}
         <div className="header-actions">
-          {/* Connection status badge */}
-          <div
+          {/* Connection status badge (clickable to open tunnel settings) */}
+          <button
+            type="button"
             className={`status-badge ${
               checking ? 'checking' : isOnline ? 'online' : 'offline'
             }`}
-            title={
-              checking
-                ? 'Probing Ollama server...'
-                : isOnline
-                ? 'Local Ollama & Nemotron Mini active'
-                : status?.error || 'Backend offline'
-            }
+            onClick={onOpenTunnelSettings}
+            title="Click to view connection diagnostics or change ngrok URL"
+            aria-label="Backend connection status and tunnel configuration"
           >
             <span className="status-dot"></span>
             <span className="status-label">
               {checking ? 'Connecting...' : isOnline ? 'Backend Online' : 'Offline / Tunnel Down'}
             </span>
-          </div>
+          </button>
 
           {/* Quick launch chat button in header */}
           <button

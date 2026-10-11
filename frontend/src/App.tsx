@@ -5,12 +5,14 @@ import { Header } from './components/Header';
 import { MainLayout } from './components/MainLayout';
 import { FloatingChatButton } from './components/FloatingChatButton';
 import { ChatWindow } from './components/ChatWindow';
+import { TunnelConfigModal } from './components/TunnelConfigModal';
 
 export const App: React.FC = () => {
   // Navigation & UI state
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [isChatMinimized, setIsChatMinimized] = useState<boolean>(false);
+  const [isTunnelModalOpen, setIsTunnelModalOpen] = useState<boolean>(false);
 
   // Server & Model Status
   const [serverStatus, setServerStatus] = useState<ServerStatus | null>(null);
@@ -247,6 +249,7 @@ export const App: React.FC = () => {
           setIsChatOpen(true);
           setIsChatMinimized(false);
         }}
+        onOpenTunnelSettings={() => setIsTunnelModalOpen(true)}
       />
 
       {/* Main Content Viewport */}
@@ -303,6 +306,14 @@ export const App: React.FC = () => {
         onDismissError={() => setError(null)}
         onSelectPrompt={(p, r) => handleSendMessage(p, r)}
         activeModelName={activeModelName}
+      />
+
+      {/* Backend & ngrok Tunnel Configuration Modal */}
+      <TunnelConfigModal
+        isOpen={isTunnelModalOpen}
+        onClose={() => setIsTunnelModalOpen(false)}
+        status={serverStatus}
+        onStatusUpdated={(newStatus) => setServerStatus(newStatus)}
       />
     </div>
   );
