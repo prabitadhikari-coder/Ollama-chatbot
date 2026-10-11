@@ -2,8 +2,8 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('[Build] Step 1: Installing frontend dependencies...');
-execSync('npm --prefix frontend install', { stdio: 'inherit' });
+console.log('[Build] Step 1: Installing frontend dependencies (including build tools)...');
+execSync('npm --prefix frontend install --include=dev', { stdio: 'inherit' });
 
 console.log('[Build] Step 2: Compiling TypeScript and bundling with Vite...');
 execSync('npm --prefix frontend run build', { stdio: 'inherit' });
@@ -13,7 +13,7 @@ const srcDist = path.join(__dirname, '..', 'frontend', 'dist');
 const targetDist = path.join(__dirname, '..', 'dist');
 
 if (fs.existsSync(srcDist)) {
-  fs.cpSync(srcDist, targetDist, { recursive: true });
+  fs.cpSync(srcDist, targetDist, { recursive: true, force: true });
 }
 
 console.log('[Build] ✓ Build finished successfully! Output available in both dist/ and frontend/dist/');

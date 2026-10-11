@@ -114,14 +114,27 @@ app.use("/api/", globalLimiter);
 // Request body size limit
 app.use(express.json({ limit: "100kb" }));
 
-// Static frontend serving: prefers built frontend/dist, fallbacks to public
-const frontendDistPath = path.join(__dirname, "frontend", "dist");
-const publicPath = path.join(__dirname, "public");
+// Static frontend serving: checks root dist, frontend/dist, and public
+const distPaths = [
+  path.join(__dirname, "dist"),
+  path.join(__dirname, "frontend", "dist"),
+  path.join(__dirname, "public")
+];
 
-if (fs.existsSync(frontendDistPath)) {
-  app.use(express.static(frontendDistPath));
-} else {
-  app.use(express.static(publicPath));
+for (const dirPath of distPaths) {
+  if (fs.existsSync(dirPath)) {
+    app.use(
+      express.static(dirPath, {
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith(".js") || filePath.endsWith(".mjs")) {
+            res.setHeader("Content-Type", "text/javascript; charset=utf-8");
+          } else if (filePath.endsWith(".css")) {
+            res.setHeader("Content-Type", "text/css; charset=utf-8");
+          }
+        }
+      })
+    );
+  }
 }
 
 // Lightweight health check endpoint
@@ -334,15 +347,21 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
   }
 });
 
-// Fallback route for SPA when dist is served
+// Fallback route for SPA: only handle HTML navigation, NEVER intercept missing code/assets
 app.use((req, res, next) => {
   if (req.method !== "GET") return next();
   if (req.path.startsWith("/api/")) return next();
-  if (fs.existsSync(path.join(frontendDistPath, "index.html"))) {
-    return res.sendFile(path.join(frontendDistPath, "index.html"));
+
+  // If requesting a static file with an extension (e.g. .js, .css, .svg, .map), return 404 instead of index.html
+  if (/\.[a-zA-Z0-9]+$/.test(req.path)) {
+    return res.status(404).type("text/plain").send("Asset not found");
   }
-  if (fs.existsSync(path.join(publicPath, "index.html"))) {
-    return res.sendFile(path.join(publicPath, "index.html"));
+
+  for (const dirPath of distPaths) {
+    const indexPath = path.join(dirPath, "index.html");
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
   }
   next();
 });

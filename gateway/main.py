@@ -225,17 +225,44 @@ async def proxy_all_other_routes(full_path: str, request: Request):
         raise HTTPException(status_code=503, detail="Gateway client uninitialized")
     
     url = f"/{full_path}"
+    if request.url.query:
+        url = f"{url}?{request.url.query}"
+
+    # Filter incoming headers before forwarding upstream
+    forward_headers = {
+        k: v for k, v in request.headers.items()
+        if k.lower() not in {"host", "content-length", "connection"}
+    }
+    forward_headers["ngrok-skip-browser-warning"] = "true"
+
     try:
         req = http_client.build_request(
             method=request.method,
             url=url,
-            headers=dict(request.headers)
+            headers=forward_headers
         )
         resp = await http_client.send(req)
+
+        # Filter hop-by-hop headers from upstream response
+        hop_by_hop = {"connection", "keep-alive", "transfer-encoding", "content-encoding", "upgrade"}
+        clean_headers = {
+            k: v for k, v in resp.headers.items()
+            if k.lower() not in hop_by_hop
+        }
+
+        # Determine exact media type for strict browser MIME enforcement
+        content_type = resp.headers.get("content-type")
+        if not content_type:
+            if full_path.endswith((".js", ".mjs")):
+                content_type = "text/javascript; charset=utf-8"
+            elif full_path.endswith(".css"):
+                content_type = "text/css; charset=utf-8"
+
         return Response(
             content=resp.content,
             status_code=resp.status_code,
-            headers=dict(resp.headers)
+            headers=clean_headers,
+            media_type=content_type
         )
     except Exception as e:
         return JSONResponse(
