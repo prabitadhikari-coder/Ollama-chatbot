@@ -130,6 +130,22 @@ async function runTests() {
       'CORS permits *.pages.dev domain'
     );
 
+    // Test 6b: CORS approved workers.dev origin
+    const corsWorkersRes = await makeRequest(
+      '/api/health',
+      {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'https://ollama-chatbot.prabitadhikari.workers.dev',
+          'Access-Control-Request-Method': 'GET',
+        },
+      }
+    );
+    assert(
+      corsWorkersRes.headers['access-control-allow-origin'] === 'https://ollama-chatbot.prabitadhikari.workers.dev',
+      'CORS permits *.workers.dev domain'
+    );
+
     // Test 7: CORS blocked origin
     const corsBlockedRes = await makeRequest(
       '/api/health',

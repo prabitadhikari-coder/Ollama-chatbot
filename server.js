@@ -46,7 +46,8 @@ const defaultAllowedOrigins = [
   "http://127.0.0.1:3000",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:8000",
-  "https://steadfast-luminance-praying.ngrok-free.dev"
+  "https://steadfast-luminance-praying.ngrok-free.dev",
+  "https://ollama-chatbot.prabitadhikari.workers.dev"
 ];
 
 const allAllowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...rawAllowedOrigins]));
@@ -60,8 +61,8 @@ function isOriginAllowed(origin) {
     const url = new URL(origin);
     // Allow any localhost / loopback port (3000, 5173, 8000, etc.)
     if (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1") return true;
-    // Automatically allow any Cloudflare Pages domain (*.pages.dev)
-    if (url.hostname.endsWith(".pages.dev")) return true;
+    // Automatically allow any Cloudflare Pages or Workers domain (*.pages.dev, *.workers.dev)
+    if (url.hostname.endsWith(".pages.dev") || url.hostname.endsWith(".workers.dev")) return true;
     // Allow ngrok tunnels
     if (url.hostname.endsWith(".ngrok-free.dev") || url.hostname.endsWith(".ngrok.app")) return true;
   } catch {

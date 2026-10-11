@@ -70,11 +70,11 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Gateway-Protection"] = "FastAPI-DefenseShield-v1"
     return response
 
-# CORS Middleware with regex support for Cloudflare Pages, ngrok, and any localhost port
+# CORS Middleware with regex support for Cloudflare Pages/Workers, ngrok, and any localhost port
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
-    allow_origin_regex=r"^https://([a-zA-Z0-9-]+\.)*(pages\.dev|ngrok-free\.dev|ngrok\.app)$|^http://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_origin_regex=r"^https://([a-zA-Z0-9-]+\.)*(pages\.dev|workers\.dev|ngrok-free\.dev|ngrok\.app)$|^http://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],

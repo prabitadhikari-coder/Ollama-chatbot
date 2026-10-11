@@ -174,6 +174,23 @@ async function runTests() {
       'Gateway streams valid SSE chunks from upstream AI model'
     );
 
+    // Test 8: CORS for Cloudflare Workers
+    console.log('\n--- 7. Testing CORS for Cloudflare Workers ---');
+    const corsWorkersRes = await makeRequest(
+      '/health',
+      {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'https://ollama-chatbot.prabitadhikari.workers.dev',
+          'Access-Control-Request-Method': 'GET',
+        },
+      }
+    );
+    assert(
+      corsWorkersRes.headers['access-control-allow-origin'] === 'https://ollama-chatbot.prabitadhikari.workers.dev',
+      'Gateway permits *.workers.dev origin via CORS'
+    );
+
     console.log(`\n=======================================================`);
     console.log(`Gateway Test Suite: ${passed} Passed, ${failed} Failed`);
     console.log(`=======================================================`);
