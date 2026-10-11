@@ -6,6 +6,7 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 3000;
 
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
@@ -98,6 +99,7 @@ const globalLimiter = rateLimit({
   max: Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 60,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: {
     error: "Too many requests to the server. Please wait a moment and try again."
   }
@@ -108,6 +110,7 @@ const chatLimiter = rateLimit({
   max: Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 30,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: {
     error: "AI model rate limit exceeded. Please wait a few seconds before sending another message."
   }
