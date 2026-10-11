@@ -10,20 +10,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "dompurify": "^3.4.16",
-    "lucide-react": "^1.54.0",
-    "marked": "^18.1.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
-  },
-  "devDependencies": {
     "@types/dompurify": "^3.0.5",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
-    "oxlint": "^1.81.0",
+    "dompurify": "^3.4.16",
+    "lucide-react": "^1.54.0",
+    "marked": "^18.1.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
+  },
+  "devDependencies": {
+    "oxlint": "^1.81.0"
   }
 }
