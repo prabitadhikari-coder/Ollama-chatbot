@@ -390,6 +390,15 @@
         <button class="overlay-close" onclick="closeAiOverlay()">&times;</button>
       </div>
 
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px; background:#1e293b; border-bottom:1px solid #334155; font-size:12px; color:#cbd5e1;">
+        <span style="font-weight:600;">Access Level:</span>
+        <select id="overlay-user-role" style="padding:4px 8px; font-size:11px; border-radius:6px; border:1px solid #475569; background:#0f172a; color:#fff; font-weight:600; cursor:pointer;">
+          <option value="admin" selected>🔑 Admin (Full Access)</option>
+          <option value="employee">💼 Employee (Staff)</option>
+          <option value="customer">👤 Customer (Public)</option>
+        </select>
+      </div>
+
       <div class="overlay-messages" id="messages-container">
         <div class="bubble assistant">
           👋 Hello! I am your AI assistant running through the Communication Bridge to Ollama. How can I help you today?
@@ -482,16 +491,18 @@
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
       try {
-        // Send request to Bridge (which proxies to FastAPI -> Node -> Ollama)
+        const activeRole = document.getElementById("overlay-user-role")?.value || "admin";
         const response = await fetch(`${BRIDGE_API_URL}/api/chat`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true"
+            "ngrok-skip-browser-warning": "true",
+            "X-User-Role": activeRole
           },
           body: JSON.stringify({
             message: text,
             role: "chat",
+            userRole: activeRole,
             history: []
           })
         });

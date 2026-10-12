@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { ChatMessage, ModelRole, ServerStatus } from '../services/api';
+import type { ChatMessage, ModelRole, ServerStatus, AuthUser, UserRole } from '../services/api';
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
@@ -22,6 +22,9 @@ interface ChatWindowProps {
   onRefreshStatus: () => void;
   role: ModelRole;
   onRoleChange: (role: ModelRole) => void;
+  currentUser?: AuthUser;
+  onQuickRoleChange?: (role: UserRole) => void;
+  onOpenAuthModal?: () => void;
   error: string | null;
   onRetry?: () => void;
   onDismissError?: () => void;
@@ -47,6 +50,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onRefreshStatus,
   role,
   onRoleChange,
+  currentUser,
+  onQuickRoleChange,
+  onOpenAuthModal,
   error,
   onRetry,
   onDismissError,
@@ -86,6 +92,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         onRefreshStatus={onRefreshStatus}
         role={role}
         onRoleChange={onRoleChange}
+        currentUser={currentUser}
+        onQuickRoleChange={onQuickRoleChange}
+        onOpenAuthModal={onOpenAuthModal}
         onNewChat={onNewChat}
         onExportChat={onExportChat}
         isMinimized={isMinimized}

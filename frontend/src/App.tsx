@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import type { ServerStatus, ChatMessage, ModelRole } from './services/api';
-import { checkServerStatus, streamChatMessage } from './services/api';
+import type { ServerStatus, ChatMessage, ModelRole, AuthUser, UserRole } from './services/api';
+import { checkServerStatus, streamChatMessage, getActiveAuthUser, setActiveAuthUser } from './services/api';
 import { Header } from './components/Header';
 import { MainLayout } from './components/MainLayout';
 import { FloatingChatButton } from './components/FloatingChatButton';
 import { ChatWindow } from './components/ChatWindow';
 import { TunnelConfigModal } from './components/TunnelConfigModal';
+import { AuthModal } from './components/AuthModal';
 
 export const App: React.FC = () => {
   // Navigation & UI state
@@ -13,6 +14,37 @@ export const App: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [isChatMinimized, setIsChatMinimized] = useState<boolean>(false);
   const [isTunnelModalOpen, setIsTunnelModalOpen] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+
+  // User & Role State
+  const [currentUser, setCurrentUser] = useState<AuthUser>(getActiveAuthUser);
+
+  const handleQuickRoleChange = useCallback((role: UserRole) => {
+    let name = 'Guest Customer';
+    let username = 'customer.guest';
+
+    if (role === 'admin') {
+      name = 'Local Admin';
+      username = 'admin';
+    } else if (role === 'employee') {
+      name = 'John Doe (Staff)';
+      username = 'john.doe';
+    }
+
+    const updated: AuthUser = {
+      username,
+      name,
+      role,
+    };
+
+    setActiveAuthUser(updated);
+    setCurrentUser(updated);
+
+    // Clear previous chat conversation to isolate clearance levels and prevent data leakage
+    setMessages([]);
+    setError(null);
+    setLastUserMessage(null);
+  }, []);
 
   // Server & Model Status
   const [serverStatus, setServerStatus] = useState<ServerStatus | null>(null);
@@ -121,11 +153,16 @@ export const App: React.FC = () => {
           content: m.content,
         }));
 
+      // Read current effective role dynamically to prevent any closure desync
+      const activeUser = getActiveAuthUser();
+      const effectiveRole = currentUser?.role || activeUser.role;
+
       try {
         await streamChatMessage({
           message: text,
           history: apiHistory,
           role: currentRole,
+          userRole: effectiveRole,
           signal: controller.signal,
           onToken: (token: string) => {
             setMessages((prev) =>
@@ -203,6 +240,7 @@ export const App: React.FC = () => {
       messages,
       isChatOpen,
       isChatMinimized,
+      currentUser,
     ]
   );
 
@@ -270,6 +308,8 @@ export const App: React.FC = () => {
           setIsChatMinimized(false);
         }}
         onOpenTunnelSettings={() => setIsTunnelModalOpen(true)}
+        currentUser={currentUser}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
       />
 
       {/* Main Content Viewport */}
@@ -322,6 +362,9 @@ export const App: React.FC = () => {
         onRefreshStatus={fetchStatus}
         role={modelRole}
         onRoleChange={setModelRole}
+        currentUser={currentUser}
+        onQuickRoleChange={handleQuickRoleChange}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
         error={error}
         onRetry={lastUserMessage ? handleRetry : undefined}
         onDismissError={() => setError(null)}
@@ -335,6 +378,19 @@ export const App: React.FC = () => {
         onClose={() => setIsTunnelModalOpen(false)}
         status={serverStatus}
         onStatusUpdated={(newStatus) => setServerStatus(newStatus)}
+      />
+
+      {/* Role Changing, Login & Register Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        currentUser={currentUser}
+        onUserChanged={(updatedUser) => {
+          setCurrentUser(updatedUser);
+          setMessages([]);
+          setError(null);
+          setLastUserMessage(null);
+        }}
       />
     </div>
   );

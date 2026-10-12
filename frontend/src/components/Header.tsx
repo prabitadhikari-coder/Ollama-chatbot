@@ -1,6 +1,6 @@
 import React from 'react';
-import { Bot, Shield, Activity, UserCircle } from 'lucide-react';
-import type { ServerStatus } from '../services/api';
+import { Bot, Shield, Activity, UserCircle, Briefcase, User } from 'lucide-react';
+import type { ServerStatus, AuthUser } from '../services/api';
 
 interface HeaderProps {
   status: ServerStatus | null;
@@ -9,6 +9,8 @@ interface HeaderProps {
   setActiveTab: (tab: string) => void;
   onOpenChat: () => void;
   onOpenTunnelSettings: () => void;
+  currentUser: AuthUser;
+  onOpenAuthModal: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,6 +20,8 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   onOpenChat,
   onOpenTunnelSettings,
+  currentUser,
+  onOpenAuthModal,
 }) => {
   const isOnline = status?.connected && status?.chatModelAvailable;
 
@@ -102,17 +106,94 @@ export const Header: React.FC<HeaderProps> = ({
             <span>Launch Chat</span>
           </button>
 
-          {/* User profile / Role badge */}
-          <div className="user-profile-badge">
-            <UserCircle size={28} className="user-avatar" />
-            <div className="user-meta">
-              <span className="user-name">Local Admin</span>
-              <span className="user-role-pill">
-                <Shield size={10} />
-                Administrator
+          {/* User profile / Role badge with interactive Role Changing & Login trigger */}
+          <button
+            type="button"
+            className="user-profile-badge user-profile-btn"
+            onClick={onOpenAuthModal}
+            title="Click to Switch Role, Sign In, or Register"
+            aria-label="User profile, role management, and authentication"
+            style={{
+              cursor: 'pointer',
+              border: '1px solid #cbd5e1',
+              borderRadius: '12px',
+              padding: '6px 12px',
+              background: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <UserCircle
+              size={28}
+              className="user-avatar"
+              style={{
+                color:
+                  currentUser.role === 'admin'
+                    ? '#7c3aed'
+                    : currentUser.role === 'employee'
+                    ? '#2563eb'
+                    : '#059669',
+              }}
+            />
+            <div className="user-meta" style={{ textAlign: 'left' }}>
+              <span className="user-name" style={{ fontWeight: 600, fontSize: '13px', color: '#0f172a' }}>
+                {currentUser.name}
+              </span>
+              <span
+                className="user-role-pill"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  borderRadius: '999px',
+                  padding: '2px 8px',
+                  background:
+                    currentUser.role === 'admin'
+                      ? '#f3e8ff'
+                      : currentUser.role === 'employee'
+                      ? '#eff6ff'
+                      : '#ecfdf5',
+                  color:
+                    currentUser.role === 'admin'
+                      ? '#7c3aed'
+                      : currentUser.role === 'employee'
+                      ? '#2563eb'
+                      : '#059669',
+                }}
+              >
+                {currentUser.role === 'admin' ? (
+                  <>
+                    <Shield size={10} /> Administrator
+                  </>
+                ) : currentUser.role === 'employee' ? (
+                  <>
+                    <Briefcase size={10} /> Staff Employee
+                  </>
+                ) : (
+                  <>
+                    <User size={10} /> Customer
+                  </>
+                )}
               </span>
             </div>
-          </div>
+            <div
+              style={{
+                fontSize: '11px',
+                color: '#64748b',
+                background: '#f1f5f9',
+                padding: '4px 6px',
+                borderRadius: '6px',
+                fontWeight: 600,
+                marginLeft: '4px',
+              }}
+            >
+              Switch
+            </div>
+          </button>
         </div>
       </div>
     </header>

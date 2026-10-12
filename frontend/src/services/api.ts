@@ -67,6 +67,34 @@ export interface ChatMessage {
 
 export type ModelRole = 'chat' | 'reading';
 
+export type UserRole = 'customer' | 'employee' | 'admin';
+
+export interface AuthUser {
+  username: string;
+  name: string;
+  role: UserRole;
+  email?: string;
+}
+
+export function getActiveAuthUser(): AuthUser {
+  try {
+    const saved = localStorage.getItem('nexus_auth_user');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return {
+    username: 'admin',
+    name: 'Local Admin',
+    role: 'admin'
+  };
+}
+
+export function setActiveAuthUser(user: AuthUser): void {
+  try {
+    localStorage.setItem('nexus_auth_user', JSON.stringify(user));
+    localStorage.setItem('nexus_user_role', user.role);
+  } catch {}
+}
+
 /**
  * Standard fetch wrapper that automatically injects the ngrok bypass header
  * so that free-tier ngrok tunnels never return an HTML interstitial warning page.
@@ -163,6 +191,7 @@ export interface StreamChatParams {
   message: string;
   history: Array<{ role: 'user' | 'assistant'; content: string }>;
   role: ModelRole;
+  userRole?: UserRole;
   signal?: AbortSignal;
   onToken: (token: string) => void;
   onModel?: (model: string) => void;
@@ -177,21 +206,26 @@ export async function streamChatMessage({
   message,
   history,
   role,
+  userRole,
   signal,
   onToken,
   onModel,
   onDone,
   onError,
 }: StreamChatParams): Promise<void> {
+  const activeRole = userRole || getActiveAuthUser().role;
+
   const response = await apiFetch('/api/chat', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'X-User-Role': activeRole,
     },
     body: JSON.stringify({
       message,
       history,
       role,
+      userRole: activeRole,
     }),
     signal,
   });

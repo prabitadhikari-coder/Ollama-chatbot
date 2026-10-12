@@ -46,6 +46,16 @@
       <div id="model-name">Checking model...</div>
     </div>
 
+    <div class="model-bar" style="border-top: 1px solid #e2e8f0; padding-top: 8px;">
+      <label for="user-role">Access level</label>
+      <select id="user-role" style="font-weight: 600;">
+        <option value="admin" selected>🔑 Admin (Full Access)</option>
+        <option value="employee">💼 Employee (Staff)</option>
+        <option value="customer">👤 Customer (Public)</option>
+      </select>
+      <div id="role-badge" style="font-size: 11px; color: #16a34a; font-weight: 600;">Full Access Enabled</div>
+    </div>
+
     <div id="messages" aria-live="polite">
       <div class="message assistant">
         Hi! How can I help you today?

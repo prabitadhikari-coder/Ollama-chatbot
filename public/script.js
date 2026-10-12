@@ -35,6 +35,23 @@ function updateModelLabel() {
 
 roleSelect.addEventListener("change", updateModelLabel);
 
+const userRoleSelectEl = document.getElementById("user-role");
+const roleBadgeEl = document.getElementById("role-badge");
+if (userRoleSelectEl && roleBadgeEl) {
+  userRoleSelectEl.addEventListener("change", () => {
+    if (userRoleSelectEl.value === "admin") {
+      roleBadgeEl.textContent = "Full Access Enabled";
+      roleBadgeEl.style.color = "#16a34a";
+    } else if (userRoleSelectEl.value === "employee") {
+      roleBadgeEl.textContent = "Staff Orders & Expenses";
+      roleBadgeEl.style.color = "#2563eb";
+    } else {
+      roleBadgeEl.textContent = "Public Customer Mode";
+      roleBadgeEl.style.color = "#64748b";
+    }
+  });
+}
+
 async function checkStatus() {
   try {
     const response = await fetch("/api/status");
@@ -125,14 +142,21 @@ form.addEventListener("submit", async (event) => {
   let actualModel = modelNames[role];
   let streamError = null;
 
+  const userRoleSelect = document.getElementById("user-role");
+  const userRole = userRoleSelect ? userRoleSelect.value : "admin";
+
   try {
     const response = await fetch("/api/chat", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Role": userRole
+      },
       body: JSON.stringify({
         message,
         history,
-        role
+        role,
+        userRole
       })
     });
 

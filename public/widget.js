@@ -33,6 +33,7 @@
     title: currentScript?.getAttribute('data-title') || 'NexusAI Assistant',
     subtitle: currentScript?.getAttribute('data-subtitle') || 'Powered by Local Ollama',
     role: currentScript?.getAttribute('data-role') || 'chat',
+    userRole: currentScript?.getAttribute('data-user-role') || window.NEXUS_USER_ROLE || (typeof localStorage !== 'undefined' ? localStorage.getItem('nexus_user_role') : null) || 'admin',
     primaryColor: currentScript?.getAttribute('data-color') || '#2563eb',
     position: currentScript?.getAttribute('data-position') || 'bottom-right',
   };
@@ -356,6 +357,15 @@
         </button>
       </div>
 
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 14px; background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:12px;">
+        <span style="font-weight:600; color:#475569;">Access Level:</span>
+        <select id="widget-role-select" style="padding:2px 8px; font-size:11px; border-radius:6px; border:1px solid #cbd5e1; background:#fff; font-weight:600; cursor:pointer;">
+          <option value="admin" ${config.userRole === 'admin' ? 'selected' : ''}>🔑 Admin (Full Access)</option>
+          <option value="employee" ${config.userRole === 'employee' ? 'selected' : ''}>💼 Employee (Staff)</option>
+          <option value="customer" ${config.userRole === 'customer' ? 'selected' : ''}>👤 Customer (Public)</option>
+        </select>
+      </div>
+
       <div class="messages-area" id="widget-messages">
         <div class="welcome-card">
           👋 <strong>Hello! How can I help you today?</strong><br />
@@ -395,6 +405,14 @@
   const formEl = shadow.getElementById('widget-form');
   const inputEl = shadow.getElementById('widget-input');
   const sendBtn = shadow.getElementById('widget-send');
+  const roleSelectEl = shadow.getElementById('widget-role-select');
+
+  if (roleSelectEl) {
+    roleSelectEl.addEventListener('change', (e) => {
+      config.userRole = e.target.value;
+      try { localStorage.setItem('nexus_user_role', e.target.value); } catch {}
+    });
+  }
 
   // Toggle Chat
   function setOpen(state) {
@@ -440,16 +458,19 @@
     currentAbortController = new AbortController();
 
     try {
+      const activeRole = config.userRole || (roleSelectEl ? roleSelectEl.value : 'admin');
       const response = await fetch(`${config.apiUrl}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
+          'X-User-Role': activeRole,
         },
         body: JSON.stringify({
           message: text,
           history: messages.slice(-10),
           role: config.role,
+          userRole: activeRole,
         }),
         signal: currentAbortController.signal,
       });

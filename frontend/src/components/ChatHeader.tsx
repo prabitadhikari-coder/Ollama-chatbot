@@ -9,8 +9,9 @@ import {
   BookOpen,
   MessageSquare,
   Download,
+  Shield,
 } from 'lucide-react';
-import type { ModelRole, ServerStatus } from '../services/api';
+import type { ModelRole, ServerStatus, AuthUser, UserRole } from '../services/api';
 import { ConnectionStatus } from './ConnectionStatus';
 
 interface ChatHeaderProps {
@@ -19,6 +20,9 @@ interface ChatHeaderProps {
   onRefreshStatus: () => void;
   role: ModelRole;
   onRoleChange: (role: ModelRole) => void;
+  currentUser?: AuthUser;
+  onQuickRoleChange?: (role: UserRole) => void;
+  onOpenAuthModal?: () => void;
   onNewChat: () => void;
   onExportChat?: () => void;
   isMinimized: boolean;
@@ -35,6 +39,9 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   onRefreshStatus,
   role,
   onRoleChange,
+  currentUser,
+  onQuickRoleChange,
+  onOpenAuthModal,
   onNewChat,
   onExportChat,
   isMinimized,
@@ -144,6 +151,125 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
             <BookOpen size={13} />
             <span>Reading: Nemotron Nano</span>
           </button>
+        </div>
+      </div>
+
+      {/* Database Clearance & Role Switcher */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '6px 12px',
+          background: 'rgba(15, 23, 42, 0.75)',
+          borderTop: '1px solid rgba(51, 65, 85, 0.4)',
+          fontSize: '11px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Shield
+            size={12}
+            style={{
+              color:
+                currentUser?.role === 'admin'
+                  ? '#a855f7'
+                  : currentUser?.role === 'employee'
+                  ? '#3b82f6'
+                  : '#10b981',
+            }}
+          />
+          <span style={{ color: '#94a3b8', fontWeight: 500 }}>Clearance:</span>
+          <span
+            style={{
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              color:
+                currentUser?.role === 'admin'
+                  ? '#c084fc'
+                  : currentUser?.role === 'employee'
+                  ? '#60a5fa'
+                  : '#34d399',
+            }}
+          >
+            {currentUser?.role || 'customer'}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <button
+            type="button"
+            onClick={() => onQuickRoleChange?.('customer')}
+            title="Public Catalog & Return Policies only"
+            style={{
+              padding: '2px 7px',
+              borderRadius: '4px',
+              fontWeight: 600,
+              fontSize: '11px',
+              cursor: 'pointer',
+              border: currentUser?.role === 'customer' ? '1px solid rgba(16, 185, 129, 0.5)' : '1px solid transparent',
+              background: currentUser?.role === 'customer' ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+              color: currentUser?.role === 'customer' ? '#6ee7b7' : '#64748b',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            Customer
+          </button>
+          <button
+            type="button"
+            onClick={() => onQuickRoleChange?.('employee')}
+            title="Unlock Customer Orders, Emails & Internal WiFi/VPN"
+            style={{
+              padding: '2px 7px',
+              borderRadius: '4px',
+              fontWeight: 600,
+              fontSize: '11px',
+              cursor: 'pointer',
+              border: currentUser?.role === 'employee' ? '1px solid rgba(59, 130, 246, 0.5)' : '1px solid transparent',
+              background: currentUser?.role === 'employee' ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
+              color: currentUser?.role === 'employee' ? '#93c5fd' : '#64748b',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            Employee
+          </button>
+          <button
+            type="button"
+            onClick={() => onQuickRoleChange?.('admin')}
+            title="Unlock Full Executive Access: POs, Financials & Margins"
+            style={{
+              padding: '2px 7px',
+              borderRadius: '4px',
+              fontWeight: 600,
+              fontSize: '11px',
+              cursor: 'pointer',
+              border: currentUser?.role === 'admin' ? '1px solid rgba(168, 85, 247, 0.5)' : '1px solid transparent',
+              background: currentUser?.role === 'admin' ? 'rgba(168, 85, 247, 0.2)' : 'transparent',
+              color: currentUser?.role === 'admin' ? '#d8b4fe' : '#64748b',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            Admin
+          </button>
+          {onOpenAuthModal && (
+            <button
+              type="button"
+              onClick={onOpenAuthModal}
+              title="Open full login / register account modal"
+              style={{
+                marginLeft: '4px',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '10px',
+                color: '#94a3b8',
+                background: 'rgba(51, 65, 85, 0.3)',
+                border: '1px solid rgba(71, 85, 105, 0.4)',
+                cursor: 'pointer',
+              }}
+            >
+              Account...
+            </button>
+          )}
         </div>
       </div>
     </div>
